@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>九九乘法大冒险 · 二年级数学闯关</title>
+<style>
+/* =========================================================
+   0. 变量 & 基础
+   ========================================================= */
+:root{
+  --red:#E8452C; --orange:#F79A1E; --yellow:#FFD93B; --green:#2FBF9E;
+  --blue:#38A9E3; --purple:#9B6BD6; --pink:#F27FA8; --ink:#3B3226;
+  --card:#FFFDF4; --line:#3B3226;
+  --shadow:0 6px 0 rgba(59,50,38,.85);
+  --shadow-sm:0 4px 0 rgba(59,50,38,.8);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{
+  font-family:"PingFang SC","HarmonyOS Sans SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(circle at 50% -10%, #FFFCE6 0%, #FFF0A8 30%, #FFE45C 62%, #FFD32E 100%) fixed;
+  overflow-x:hidden;
+  font-weight:700;
+}
+body::before{ /* 阳光放射 */
+  content:"";position:fixed;inset:-30% -30% auto -30%;height:110vh;z-index:0;pointer-events:none;
+  background:repeating-conic-gradient(from 0deg at 50% 40%, rgba(255,255,255,.32) 0deg 6deg, rgba(255,255,255,0) 6deg 14deg);
+  animation:spin 70s linear infinite;opacity:.7;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+button{font-family:inherit;font-weight:900;color:inherit;cursor:pointer;border:0;background:none}
+.wrap{position:relative;z-index:2;max-width:1180px;margin:0 auto;padding:14px 16px 48px}
+
+/* =========================================================
+   1. 通用组件
+   ========================================================= */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  border:4px solid var(--line);border-radius:20px;box-shadow:var(--shadow);
+  background:var(--card);padding:12px 22px;font-size:20px;
+  transition:transform .08s ease, box-shadow .08s ease, filter .15s;
+}
+.btn:hover{filter:brightness(1.05)}
+.btn:active{transform:translateY(5px);box-shadow:0 1px 0 rgba(59,50,38,.85)}
+.btn.primary{background:linear-gradient(180deg,#FF7A5C,#E8452C);color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.18)}
+.btn.go{background:linear-gradient(180deg,#5BD8B8,#2FBF9E);color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.18)}
+.btn.ghost{background:#fff}
+.panel{
+  background:var(--card);border:4px solid var(--line);border-radius:26px;
+  box-shadow:var(--shadow);padding:16px 18px 20px;margin-bottom:18px;
+  animation:fadeUp .45s both;
+}
+.panel h2{
+  margin:2px 0 14px;font-size:21px;display:flex;align-items:center;gap:10px;
+}
+.panel h2 .num{
+  width:34px;height:34px;border-radius:50%;background:var(--blue);color:#fff;
+  display:grid;place-items:center;border:3px solid var(--line);font-size:18px;flex:none;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* =========================================================
+   2. 标题区
+   ========================================================= */
+.hero{text-align:center;position:relative;padding:6px 0 4px;z-index:2}
+.logo{
+  margin:6px 0 2px;font-size:clamp(32px,6.6vw,60px);line-height:1.05;letter-spacing:2px;
+  color:#fff;
+  text-shadow:
+    4px 0 0 var(--line),-4px 0 0 var(--line),0 4px 0 var(--line),0 -4px 0 var(--line),
+    4px 4px 0 var(--line),-4px 4px 0 var(--line),4px -4px 0 var(--line),-4px -4px 0 var(--line),
+    0 12px 0 rgba(232,69,44,.55);
+  animation:logoBob 3s ease-in-out infinite;
+}
+.logo em{
+  font-style:normal;color:#E8452C;display:inline-block;
+  text-shadow:
+    4px 0 0 var(--line),-4px 0 0 var(--line),0 4px 0 var(--line),0 -4px 0 var(--line),
+    4px 4px 0 var(--line),-4px 4px 0 var(--line),4px -4px 0 var(--line),-4px -4px 0 var(--line),
+    0 12px 0 rgba(47,191,158,.75);
+  animation:emPop 3s ease-in-out infinite;
+}
+@keyframes emPop{0%,100%{transform:rotate(1.4deg) scale(1)}50%{transform:rotate(-1.4deg) scale(1.05)}}
+@keyframes logoBob{0%,100%{transform:translateY(0) rotate(-.6deg)}50%{transform:translateY(-8px) rotate(.6deg)}}
+.sub{
+  display:inline-block;margin:10px 0 6px;background:#fff;border:3px dashed var(--line);
+  border-radius:999px;padding:6px 18px;font-size:15px;box-shadow:var(--shadow-sm);
+}
+.parade{display:flex;justify-content:center;flex-wrap:wrap;gap:2px;margin:4px 0 8px}
+.parade .mascot{width:68px;height:68px}
+
+/* 分步引导 */
+.step-hidden{display:none !important}
+.stepper{display:flex;justify-content:center;align-items:center;gap:6px;flex-wrap:wrap;margin:12px 0 2px}
+.stp{
+  display:flex;align-items:center;gap:6px;background:#fff;border:3px solid var(--line);border-radius:999px;
+  padding:4px 13px 4px 6px;font-size:14px;color:#B3A78E;box-shadow:0 3px 0 rgba(59,50,38,.6);
+  transition:transform .25s, background .25s, color .25s;
+}
+.stp i{
+  width:22px;height:22px;border-radius:50%;background:#DCD3BE;color:#fff;font-style:normal;font-size:13px;
+  display:grid;place-items:center;
+}
+.stp.on{color:var(--ink);background:var(--yellow);transform:translateY(-3px) scale(1.04)}
+.stp.on i{background:var(--red)}
+.stp.done{color:var(--green)}
+.stp.done i{background:var(--green)}
+.stp.done i::before{content:"✓";font-size:13px}
+.stp.done i{font-size:0}
+.confirm-btn{
+  background:linear-gradient(180deg,#5BD8B8,#2FBF9E);color:#fff;font-size:18px;padding:10px 18px;
+  white-space:nowrap;animation:pop .45s cubic-bezier(.2,1.7,.45,1) both;
+}
+#helperText{animation:fadeUp .4s both}
+
+/* =========================================================
+   3. 角色（SVG 人偶）
+   ========================================================= */
+.mascot{width:120px;height:120px;flex:none;display:block;position:relative;transform-origin:50% 90%}
+.mascot svg{width:100%;height:100%;overflow:visible}
+.mascot .m-body{transform-origin:70px 120px}
+.mascot.idle .m-body{animation:bob 1.9s ease-in-out infinite}
+.mascot.idle .m-wing-l{animation:wingL .9s ease-in-out infinite}
+.mascot.idle .m-wing-r{animation:wingR .9s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) scaleY(1)}45%{transform:translateY(-7px) scaleY(1.03)}}
+@keyframes wingL{0%,100%{transform:rotate(0)}50%{transform:rotate(-16deg)}}
+@keyframes wingR{0%,100%{transform:rotate(0)}50%{transform:rotate(16deg)}}
+.mascot .m-wing-l{transform-origin:30px 62px}
+.mascot .m-wing-r{transform-origin:110px 62px}
+.m-eyes{transform-box:fill-box;transform-origin:center;animation:blink 4.4s infinite}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+.mascot.happy .m-body{animation:jump .48s cubic-bezier(.3,1.6,.5,1) 2}
+@keyframes jump{0%,100%{transform:translateY(0) scale(1,1)}30%{transform:translateY(-26px) scale(.94,1.09)}60%{transform:translateY(0) scale(1.1,.9)}}
+.mascot.happy .m-wing-l{animation:cheerL .48s ease-in-out 2}
+.mascot.happy .m-wing-r{animation:cheerR .48s ease-in-out 2}
+@keyframes cheerL{0%,100%{transform:rotate(0)}50%{transform:rotate(-58deg)}}
+@keyframes cheerR{0%,100%{transform:rotate(0)}50%{transform:rotate(58deg)}}
+.mascot.sad .m-body{animation:shakeM .5s ease}
+.mascot.sad .m-beak{animation:shakeM .5s ease}
+@keyframes shakeM{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.mascot.thinking .m-body{animation:tilt 1.6s ease-in-out infinite}
+@keyframes tilt{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+
+/* =========================================================
+   4. 设置页
+   ========================================================= */
+.table-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px}
+.tcard{
+  border:4px solid var(--line);border-radius:20px;box-shadow:var(--shadow-sm);
+  padding:6px 4px 8px;text-align:center;background:#fff;position:relative;
+  transition:transform .12s ease, box-shadow .12s ease;overflow:hidden;
+}
+.tcard .band{
+  border-radius:12px;border:3px solid var(--line);margin:2px 4px 0;
+  font-size:14px;color:#fff;padding:2px 0;text-shadow:0 1px 0 rgba(0,0,0,.2);
+}
+.tcard .mini{width:62px;height:62px;margin:2px auto -4px}
+.tcard .tick{
+  position:absolute;top:-6px;right:-6px;width:30px;height:30px;border-radius:50%;
+  background:var(--green);border:3px solid var(--line);color:#fff;display:none;
+  place-items:center;font-size:16px;
+}
+.tcard.on{transform:translateY(-4px);box-shadow:0 8px 0 rgba(59,50,38,.85)}
+.tcard.on .tick{display:grid;animation:pop .35s cubic-bezier(.2,1.7,.45,1) both}
+.tcard.on::after{content:"";position:absolute;inset:0;border-radius:16px;box-shadow:inset 0 0 0 5px var(--yellow)}
+.tcard:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(59,50,38,.8)}
+.quick{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.mini-btn{
+  border:3px solid var(--line);border-radius:999px;background:#fff;box-shadow:0 3px 0 rgba(59,50,38,.8);
+  padding:6px 14px;font-size:14px;
+}
+.mini-btn:active{transform:translateY(3px);box-shadow:none}
+
+.range-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;flex:1;min-width:220px;height:22px;border-radius:999px;
+  border:4px solid var(--line);background:linear-gradient(90deg,#FFD93B,#F79A1E,#E8452C);outline:none;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:38px;height:38px;border-radius:50%;background:#fff;
+  border:4px solid var(--line);box-shadow:0 3px 0 rgba(59,50,38,.7);cursor:pointer;
+}
+input[type=range]::-moz-range-thumb{
+  width:34px;height:34px;border-radius:50%;background:#fff;border:4px solid var(--line);cursor:pointer;
+}
+.bignum{
+  width:76px;height:76px;border-radius:22px;background:var(--orange);color:#fff;border:4px solid var(--line);
+  box-shadow:var(--shadow-sm);display:grid;place-items:center;font-size:38px;flex:none;
+  text-shadow:0 3px 0 rgba(0,0,0,.22);
+}
+.preview{
+  margin-top:14px;background:#FFF6D6;border:3px dashed var(--line);border-radius:18px;padding:10px 14px;font-size:15px;
+}
+.preview b{color:var(--red)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{
+  background:#fff;border:3px solid var(--line);border-radius:999px;padding:3px 11px;font-size:14px;
+  box-shadow:0 2px 0 rgba(59,50,38,.6);
+}
+.chip.hi{background:var(--yellow)}
+.count-opts{display:flex;gap:10px;flex-wrap:wrap}
+.count-opts .mini-btn{font-size:16px;padding:8px 20px}
+.count-opts .mini-btn.on{background:var(--green);color:#fff;box-shadow:0 3px 0 var(--line)}
+.start-row{text-align:center;margin:6px 0 0;animation:fadeUp .45s both}
+.btn-start{font-size:26px;padding:16px 46px;border-radius:26px;animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+.btn-start:active{animation:none}
+
+/* =========================================================
+   5. 游戏页
+   ========================================================= */
+.topbar{
+  display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;
+  background:var(--card);border:4px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:10px 14px;
+}
+.rail{position:relative;flex:1;min-width:180px;height:22px;background:#EFE7D2;border:3px solid var(--line);border-radius:999px;overflow:visible}
+.rail .fill{position:absolute;inset:0 auto 0 0;width:0%;border-radius:999px;background:linear-gradient(90deg,#7BE3C6,#2FBF9E);transition:width .5s cubic-bezier(.3,1.4,.5,1)}
+.rail .rocket{position:absolute;top:-16px;left:0%;font-size:26px;transform:translateX(-50%) rotate(6deg);transition:left .5s cubic-bezier(.3,1.4,.5,1);filter:drop-shadow(0 3px 3px rgba(0,0,0,.25))}
+.scorepill{display:flex;align-items:center;gap:6px;background:#fff;border:3px solid var(--line);border-radius:999px;padding:4px 14px;font-size:17px;box-shadow:0 3px 0 rgba(59,50,38,.7);white-space:nowrap}
+.icon-btn{width:44px;height:44px;border:3px solid var(--line);border-radius:14px;background:#fff;box-shadow:0 3px 0 rgba(59,50,38,.7);display:grid;place-items:center;font-size:20px;flex:none}
+.icon-btn:active{transform:translateY(3px);box-shadow:none}
+
+.game-grid{display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:start}
+.side{display:flex;flex-direction:column;gap:12px}
+.card{
+  background:var(--card);border:4px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:14px;
+}
+.card h3{margin:0 0 10px;font-size:18px;display:flex;align-items:center;gap:8px}
+.wall-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.wall-tab{
+  flex:none;width:58px;text-align:center;color:#fff;border:3px solid var(--line);border-radius:12px;
+  font-size:12px;padding:3px 0;text-shadow:0 1px 0 rgba(0,0,0,.2);
+}
+.wall-cells{display:flex;gap:5px;flex-wrap:wrap;min-width:0;flex:1}
+.cell{
+  width:34px;height:34px;flex:none;border-radius:10px;border:3px solid var(--line);background:#E9E3D2;color:#A99E88;
+  display:grid;place-items:center;font-size:15px;transition:all .3s;
+}
+.cell.done{background:var(--green);color:#fff;animation:pop .4s cubic-bezier(.2,1.7,.45,1) both;text-shadow:0 1px 0 rgba(0,0,0,.2)}
+.cell.now{outline:4px solid var(--yellow);outline-offset:1px}
+
+.bubble-row{display:flex;align-items:flex-end;gap:6px;margin-bottom:10px}
+.bubble{
+  position:relative;background:#fff;border:4px solid var(--line);border-radius:22px;
+  padding:12px 16px;box-shadow:var(--shadow-sm);flex:1;min-height:64px;display:flex;align-items:center;
+}
+.bubble::before{
+  content:"";position:absolute;left:-16px;bottom:22px;width:0;height:0;
+  border:9px solid transparent;border-right-color:var(--line);
+}
+.bubble::after{
+  content:"";position:absolute;left:-9px;bottom:24px;width:0;height:0;
+  border:7px solid transparent;border-right-color:#fff;
+}
+.bubble p{margin:0;font-size:clamp(16px,2.4vw,21px);line-height:1.5}
+.bubble b{color:var(--red);font-size:1.18em}
+.bubble .tagq{
+  display:inline-block;background:var(--yellow);border:2px solid var(--line);border-radius:8px;
+  padding:0 7px;margin:0 2px;
+}
+.bubble .kindtag{
+  position:absolute;top:-14px;right:12px;background:var(--purple);color:#fff;font-size:12px;
+  border:3px solid var(--line);border-radius:999px;padding:1px 10px;
+}
+
+.stage{
+  background:linear-gradient(180deg,#FFFDF4,#FFF6D9);border:4px solid var(--line);border-radius:24px;
+  box-shadow:var(--shadow);padding:16px;min-height:230px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:12px;overflow:hidden;
+}
+.stage-cap{font-size:15px;background:#fff;border:3px solid var(--line);border-radius:999px;padding:3px 14px;box-shadow:0 3px 0 rgba(59,50,38,.6)}
+.stage-cap b{color:var(--red)}
+
+/* 阵列 */
+.arr{display:flex;flex-direction:column;gap:11px}
+.arr.sm{gap:6px}
+.arr.sm .arr-row{gap:4px;padding:0 2px}
+.arr.sm .dot{width:15px;height:15px}
+.arr.sm .row-idx{display:none}
+.arr-row{display:flex;align-items:center;gap:7px;animation:slideIn .42s cubic-bezier(.2,1.4,.5,1) both;animation-delay:var(--rd,0s);cursor:pointer;border-radius:12px;padding:2px 4px}
+.arr-row:hover{background:rgba(255,217,59,.35)}
+.arr-row.counted{background:rgba(47,191,158,.22);box-shadow:inset 0 0 0 3px rgba(47,191,158,.5)}
+@keyframes slideIn{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
+/* 行号：灰色小字 + 竖线分隔，绝不能长得像圆点 */
+.row-idx{
+  width:26px;flex:none;text-align:right;font-size:11px;font-weight:900;color:#BCAF92;
+  padding-right:7px;margin-right:2px;border-right:2px solid #E3D9BE;line-height:1;white-space:nowrap;
+}
+.dot{
+  --c:#F79A1E;width:26px;height:26px;border-radius:50%;background:var(--c);
+  border:2px solid rgba(59,50,38,.45);
+  box-shadow:inset -3px -4px 0 rgba(0,0,0,.16), inset 3px 3px 0 rgba(255,255,255,.5), 0 2px 0 rgba(59,50,38,.2);
+  animation:pop .36s cubic-bezier(.2,1.7,.45,1) both;animation-delay:var(--d,0s);
+  display:inline-block;
+}
+@keyframes pop{from{opacity:0;transform:scale(0) rotate(-40deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+
+/* 分组 */
+.groups{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;max-width:720px}
+.group{
+  border:3px dashed var(--line);border-radius:16px;padding:4px 6px 6px;background:#fff;
+  animation:pop .4s cubic-bezier(.2,1.7,.45,1) both;animation-delay:var(--gd,0s);
+}
+.gtitle{font-size:12px;text-align:center;color:#8a7f6a;margin-bottom:2px}
+.gdots{display:flex;gap:4px;flex-wrap:nowrap;justify-content:center}
+.gdots .dot{width:20px;height:20px}
+.groups.sm .dot{width:15px;height:15px}
+.groups.sm .gdots{gap:3px}
+.plus-big{font-size:26px;color:var(--red);font-weight:900;animation:pop .3s both;animation-delay:var(--pd,0s)}
+.qmark{font-size:34px;color:var(--purple);font-weight:900}
+
+/* 算式条 */
+.eqline{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;
+  font-size:clamp(19px,3vw,26px);
+}
+.eqline .term{
+  background:#fff;border:3px solid var(--line);border-radius:12px;padding:1px 11px;color:var(--red);
+  box-shadow:0 3px 0 rgba(59,50,38,.6);animation:pop .38s cubic-bezier(.2,1.7,.45,1) both;animation-delay:var(--d,0s);
+}
+.eqline .plus{color:var(--ink);font-weight:900}
+.eqline .res{
+  background:var(--green);color:#fff;border:3px solid var(--line);border-radius:12px;padding:1px 13px;
+  box-shadow:0 3px 0 rgba(59,50,38,.6);animation:pop .45s cubic-bezier(.2,1.7,.45,1) both;animation-delay:var(--d,0s);
+}
+.eqline .mui{
+  background:var(--blue);color:#fff;border:3px solid var(--line);border-radius:12px;padding:1px 13px;
+  box-shadow:0 3px 0 rgba(59,50,38,.6);animation:pop .45s cubic-bezier(.2,1.7,.45,1) both;animation-delay:var(--d,0s);
+}
+.solution{
+  width:100%;border-top:3px dashed var(--line);padding-top:12px;display:flex;flex-direction:column;
+  gap:10px;align-items:center;animation:fadeUp .4s both;
+}
+.sol-note{font-size:15px;background:#fff;border:3px solid var(--line);border-radius:14px;padding:5px 14px;box-shadow:0 3px 0 rgba(59,50,38,.55);text-align:center;line-height:1.45}
+.sol-note b{color:var(--red)}
+.swap-demo{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center}
+.big-arrow{font-size:30px;animation:nudge 1s ease-in-out infinite}
+@keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(8px)}}
+.plates{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.plate{
+  min-width:70px;border:3px solid var(--line);border-radius:16px;
+  background:#fff;display:flex;align-items:center;justify-content:center;padding:10px 10px 13px;
+  box-shadow:0 4px 0 rgba(59,50,38,.35);position:relative;
+}
+.plate .prow{display:flex;gap:3px;align-items:center;justify-content:center}
+.plate .dot{width:var(--pd,15px);height:var(--pd,15px)}
+.plate .badge{
+  position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);background:var(--orange);color:#fff;
+  border:3px solid var(--line);border-radius:999px;font-size:13px;padding:0 9px;box-shadow:0 2px 0 rgba(59,50,38,.6);
+}
+
+/* 选项 */
+.options{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+.opt{
+  position:relative;border:4px solid var(--line);border-radius:20px;box-shadow:var(--shadow);
+  background:#fff;font-size:clamp(20px,3.4vw,30px);padding:16px 6px;
+  transition:transform .1s ease, box-shadow .1s ease, background .2s;
+}
+.opt .key{
+  position:absolute;top:-10px;left:-10px;width:26px;height:26px;border-radius:8px;background:var(--purple);
+  color:#fff;border:3px solid var(--line);font-size:13px;display:grid;place-items:center;
+}
+.opt:active{transform:translateY(5px);box-shadow:0 1px 0 rgba(59,50,38,.85)}
+.opt.correct{background:linear-gradient(180deg,#7BE3C6,#2FBF9E);color:#fff;animation:pop .5s cubic-bezier(.2,1.7,.45,1) both}
+.opt.wrong{background:linear-gradient(180deg,#FFB3A6,#E8452C);color:#fff;animation:shakeM .5s ease both}
+.opt.dim{opacity:.45;pointer-events:none}
+.opt.locked{pointer-events:none}
+
+/* 提示条 */
+.hintbar{
+  margin-top:12px;background:#FFF1C2;border:3px dashed var(--line);border-radius:16px;padding:9px 14px;
+  font-size:15px;display:none;animation:fadeUp .3s both;line-height:1.5;
+}
+.hintbar.show{display:block}
+
+/* 反馈弹层 */
+.sheet{
+  position:fixed;left:0;right:0;bottom:0;z-index:70;padding:0 12px 12px;
+  transform:translateY(120%);transition:transform .42s cubic-bezier(.2,1.3,.4,1);
+  pointer-events:none;
+}
+.sheet.show{transform:translateY(0);pointer-events:auto}
+.sheet-inner{
+  max-width:760px;margin:0 auto;background:var(--card);border:4px solid var(--line);border-radius:26px;
+  box-shadow:0 -8px 0 rgba(59,50,38,.25), 0 12px 30px rgba(0,0,0,.2);padding:16px 18px;
+}
+.sheet-head{display:flex;align-items:center;gap:10px;font-size:22px;margin-bottom:8px}
+.sheet-head .rhyme{
+  margin-left:auto;background:var(--yellow);border:3px solid var(--line);border-radius:999px;padding:2px 14px;font-size:18px;
+}
+.principle{
+  background:#EAF7FF;border:3px solid var(--line);border-radius:16px;padding:10px 14px;font-size:16px;line-height:1.6;
+}
+.principle .pt{font-size:13px;color:var(--blue);display:block;margin-bottom:2px}
+.sheet-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap}
+
+/* =========================================================
+   6. 结算页
+   ========================================================= */
+.result-card{text-align:center;background:var(--card);border:5px solid var(--line);border-radius:30px;box-shadow:var(--shadow);padding:24px 20px;position:relative;overflow:hidden}
+.result-card h2{font-size:clamp(26px,5vw,40px);margin:6px 0 4px;color:var(--red);text-shadow:0 3px 0 rgba(0,0,0,.12)}
+.starrow{font-size:clamp(24px,4.4vw,38px);letter-spacing:4px;margin:6px 0;animation:pop .6s cubic-bezier(.2,1.7,.45,1) both}
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:18px 0}
+.stat{background:#fff;border:3px solid var(--line);border-radius:18px;padding:12px 8px;box-shadow:0 4px 0 rgba(59,50,38,.55)}
+.stat .v{font-size:30px;color:var(--blue)}
+.stat .k{font-size:13px;color:#8a7f6a}
+.learned{background:#FFF6D6;border:3px dashed var(--line);border-radius:18px;padding:12px;text-align:left;margin-bottom:16px}
+.learned h4{margin:0 0 8px;font-size:16px}
+.confetti{position:absolute;top:-24px;width:12px;height:16px;animation:fall linear forwards}
+@keyframes fall{to{transform:translate(var(--x,0),108vh) rotate(760deg);opacity:.85}}
+#fx{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:90}
+body.sheet-open .wrap{padding-bottom:300px}
+
+.screen{display:none}
+.screen.active{display:block;animation:fadeUp .4s both}
+
+/* =========================================================
+   7. 响应式
+   ========================================================= */
+@media(max-width:820px){
+  .game-grid{grid-template-columns:1fr}
+  .side{order:2}
+  .play{order:1}
+  .options{grid-template-columns:repeat(2,1fr)}
+  .stage{padding:12px 8px}
+  .arr{gap:5px}
+  .dot{width:22px;height:22px}
+  .row-idx{width:22px;font-size:10px;padding-right:6px}
+  .arr{gap:9px}
+  .parade .mascot{width:52px;height:52px}
+  .bubble-row .mascot{width:78px;height:78px}
+}
+@media(max-width:620px){
+  .topbar{gap:8px;padding:8px 10px}
+  .rail{order:9;flex-basis:100%;min-width:0;margin-top:4px}
+  .scorepill{padding:3px 10px;font-size:15px}
+  .icon-btn{width:40px;height:40px;font-size:18px}
+}
+@media(max-width:420px){
+  .dot{width:18px;height:18px}
+  .row-idx{width:20px;font-size:9px;padding-right:5px}
+  .table-grid{grid-template-columns:repeat(auto-fill,minmax(86px,1fr))}
+}
+</style>
+</head>
+<body>
+<div id="fx"></div>
+
+<!-- ================= 设置页 ================= -->
+<main class="wrap">
+<section class="screen active" id="screen-setup">
+  <div class="hero">
+    <h1 class="logo">九九乘法<em>大冒险</em></h1>
+    <div><span class="sub" id="stepHint">👆 先点一个口诀卡片，我就知道你要练哪个啦</span></div>
+    <div class="stepper" id="stepper">
+      <span class="stp on" data-s="1"><i>1</i>选口诀</span>
+      <span class="stp" data-s="2"><i>2</i>定范围</span>
+      <span class="stp" data-s="3"><i>3</i>定题数</span>
+    </div>
+    <div class="parade" id="parade"></div>
+  </div>
+
+  <div class="panel">
+    <h2><span class="num">1</span>选择要练的口诀</h2>
+    <div class="table-grid" id="tableGrid"></div>
+    <div class="quick">
+      <button class="mini-btn" data-quick="all">全选 1~9</button>
+      <button class="mini-btn" data-quick="none">清空</button>
+      <button class="mini-btn" data-quick="easy">只选 2·5</button>
+      <button class="mini-btn" data-quick="hard">只选 6·7·8·9</button>
+    </div>
+  </div>
+
+  <div class="panel step-hidden" id="panelMax">
+    <h2><span class="num">2</span>最大乘到几？</h2>
+    <div class="range-row">
+      <div class="bignum" id="maxShow">6</div>
+      <input type="range" id="maxRange" min="1" max="9" step="1" value="6" aria-label="最大乘数">
+      <button class="btn confirm-btn" id="btnMaxOk">就练到 6 ✅</button>
+    </div>
+    <div class="preview" id="rangePreview"></div>
+  </div>
+
+  <div class="panel step-hidden" id="panelCount">
+    <h2><span class="num">3</span>这一轮做几道题？</h2>
+    <div class="count-opts" id="countOpts">
+      <button class="mini-btn on" data-count="6">6 道</button>
+      <button class="mini-btn" data-count="10">10 道</button>
+      <button class="mini-btn" data-count="all">全部练一遍</button>
+    </div>
+  </div>
+
+  <div class="start-row step-hidden" id="startRow">
+    <button class="btn go btn-start" id="btnStart">出发闯关 ▶</button>
+  </div>
+</section>
+
+<!-- ================= 游戏页 ================= -->
+<section class="screen" id="screen-game">
+  <div class="topbar">
+    <button class="icon-btn" id="btnQuit" title="换范围">🏠</button>
+    <div class="rail"><div class="fill" id="pfill"></div><span class="rocket" id="procket">🚀</span></div>
+    <div class="scorepill">⭐ <span id="starCount">0</span></div>
+    <div class="scorepill">✅ <span id="rightCount">0</span></div>
+    <button class="icon-btn" id="btnSound" title="音效开关">🔊</button>
+  </div>
+
+  <div class="game-grid">
+    <aside class="side">
+      <div class="card">
+        <h3>🌈 口诀墙</h3>
+        <div id="wall"></div>
+        <div style="font-size:12px;color:#8a7f6a;margin-top:6px">答对一格，就点亮一格 ✨</div>
+      </div>
+      <div class="card">
+        <h3>🎓 小助手</h3>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="mascot idle thinking" id="helper" style="width:70px;height:70px"></div>
+          <div style="font-size:14px;line-height:1.5" id="helperText">别着急，慢慢想一想～</div>
+        </div>
+        <button class="mini-btn" id="btnHint" style="margin-top:10px;width:100%">💡 给我一点提示</button>
+      </div>
+    </aside>
+
+    <section class="play">
+      <div class="bubble-row">
+        <div class="mascot idle" id="teacher"></div>
+        <div class="bubble">
+          <span class="kindtag" id="kindTag">看图列式</span>
+          <p id="prompt"></p>
+        </div>
+      </div>
+
+      <div class="stage" id="stage"></div>
+
+      <div class="options" id="options"></div>
+      <div class="hintbar" id="hintbar"></div>
+    </section>
+  </div>
+</section>
+
+<!-- ================= 结算页 ================= -->
+<section class="screen" id="screen-result">
+  <div class="result-card">
+    <div class="mascot happy" id="resultMascot" style="width:130px;height:130px;margin:0 auto"></div>
+    <h2 id="resultTitle">闯关成功！</h2>
+    <div id="resultSub" style="font-size:16px">你已经是乘法小达人啦！</div>
+    <div class="starrow" id="starRow">⭐⭐⭐</div>
+    <div class="statgrid">
+      <div class="stat"><div class="v" id="rRight">0</div><div class="k">答对题目</div></div>
+      <div class="stat"><div class="v" id="rFirst">0%</div><div class="k">一次就答对</div></div>
+      <div class="stat"><div class="v" id="rStars">0</div><div class="k">获得星星</div></div>
+    </div>
+    <div class="learned">
+      <h4>🏅 已经掌握的口诀</h4>
+      <div class="chips" id="learnedChips"></div>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <button class="btn go" id="btnAgain">再玩一轮 🔁</button>
+      <button class="btn primary" id="btnBack">换个范围 🎯</button>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ================= 反馈弹层 ================= -->
+<div class="sheet" id="sheet">
+  <div class="sheet-inner">
+    <div class="sheet-head">
+      <span id="sheetEmoji" style="font-size:30px">🎉</span>
+      <span id="sheetTitle">太棒了！</span>
+      <span class="rhyme" id="sheetRhyme">口诀</span>
+    </div>
+    <div class="principle"><span class="pt" id="principleTag">💡 数学原理</span><span id="principleText"></span></div>
+    <div class="sheet-actions">
+      <button class="btn go" id="btnNext">继续 ▶</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   1. 工具函数
+   ========================================================= */
+const $  = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.prototype.slice.call(r.querySelectorAll(s));
+const rnd = n => Math.floor(Math.random() * n);
+const pick = a => a[rnd(a.length)];
+function shuffle(arr){
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--){ const j = rnd(i + 1); const t = a[i]; a[i] = a[j]; a[j] = t; }
+  return a;
+}
+const CN = ['零','一','二','三','四','五','六','七','八','九'];
+function rhymeNum(v){
+  if (v < 10) return CN[v];
+  if (v === 10) return '一十';
+  if (v < 20) return '十' + CN[v % 10];
+  const t = Math.floor(v / 10), o = v % 10;
+  return CN[t] + '十' + (o ? CN[o] : '');
+}
+function cnNum(v){
+  if (v < 10) return CN[v];
+  if (v === 10) return '十';
+  if (v < 20) return '十' + CN[v % 10];
+  const t = Math.floor(v / 10), o = v % 10;
+  return CN[t] + '十' + (o ? CN[o] : '');
+}
+/* 中文口诀，小数在前，如 二三得六 / 三七二十一 / 二五一十 */
+function rhymeOf(a, b){
+  const s = Math.min(a, b), l = Math.max(a, b), p = a * b;
+  return CN[s] + CN[l] + (p < 10 ? '得' : '') + rhymeNum(p);
+}
+const COLORS = ['#F79A1E','#E8452C','#2FBF9E','#38A9E3','#9B6BD6','#F27FA8','#F5C518','#7BC043','#FF8A65'];
+const TABLECOLOR = {1:'#E8452C',2:'#F79A1E',3:'#4A3B33',4:'#2FBF9E',5:'#38A9E3',6:'#9B6BD6',7:'#F5C518',8:'#6D4C9F',9:'#F27FA8'};
+const NAMECOLOR  = {1:'#fff',2:'#fff',3:'#fff',4:'#fff',5:'#fff',6:'#fff',7:'#3B3226',8:'#fff',9:'#fff'};
+
+/* =========================================================
+   2. 音效（Web Audio，无外部文件）
+   ========================================================= */
+let AC = null;
+function ac(){
+  if (!AC){ try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){ AC = null; } }
+  if (AC && AC.state === 'suspended') AC.resume();
+  return AC;
+}
+function tone(f, d, type, vol, at){
+  if (!state.sound) return;
+  const c = ac(); if (!c) return;
+  type = type || 'sine'; vol = vol == null ? .12 : vol; at = at || 0;
+  const t = c.currentTime + at;
+  const o = c.createOscillator(), g = c.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(vol, t + .02);
+  g.gain.exponentialRampToValueAtTime(.0001, t + d);
+  o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + d + .03);
+}
+const sfxPop    = () => tone(760 + rnd(180), .07, 'triangle', .06);
+const sfxClick  = () => tone(520, .06, 'square', .05);
+const sfxRight  = () => [523,659,784,1047].forEach((f,i) => tone(f, .16, 'triangle', .11, i * .075));
+const sfxWrong  = () => { tone(240,.18,'sawtooth',.07,0); tone(170,.24,'sawtooth',.07,.15); };
+const sfxWin    = () => [523,587,659,784,880,1047,1319].forEach((f,i) => tone(f,.24,'triangle',.11,i*.11));
+const sfxTick   = () => tone(1180, .04, 'square', .035);
+
+/* =========================================================
+   3. 卡通人偶（SVG 生成）
+   ========================================================= */
+function accessory(type, color){
+  if (type === 'pilot'){
+    return '' +
+      '<path d="M30 52 Q32 16 70 16 Q108 16 110 52 Q90 42 70 42 Q50 42 30 52 Z" fill="' + color + '" stroke="#33302E" stroke-width="4" stroke-linejoin="round"/>' +
+      '<circle cx="70" cy="12" r="7" fill="' + color + '" stroke="#33302E" stroke-width="4"/>' +
+      '<circle cx="56" cy="36" r="9" fill="#BEE9FF" stroke="#33302E" stroke-width="3.5"/>' +
+      '<circle cx="84" cy="36" r="9" fill="#BEE9FF" stroke="#33302E" stroke-width="3.5"/>' +
+      '<path d="M65 36 H75" stroke="#33302E" stroke-width="3.5"/>';
+  }
+  if (type === 'ninja'){
+    return '' +
+      '<rect x="24" y="48" width="92" height="15" rx="7.5" fill="' + color + '" stroke="#33302E" stroke-width="4"/>' +
+      '<path d="M26 55 Q8 48 4 62 Q16 62 12 74" fill="none" stroke="#33302E" stroke-width="4" stroke-linecap="round"/>';
+  }
+  if (type === 'bow'){
+    return '' +
+      '<g transform="translate(98,32)">' +
+      '<path d="M0 0 L-20 -11 L-20 11 Z" fill="' + color + '" stroke="#33302E" stroke-width="4" stroke-linejoin="round"/>' +
+      '<path d="M0 0 L20 -11 L20 11 Z" fill="' + color + '" stroke="#33302E" stroke-width="4" stroke-linejoin="round"/>' +
+      '<circle cx="0" cy="0" r="6.5" fill="#FFD93B" stroke="#33302E" stroke-width="3.5"/></g>';
+  }
+  if (type === 'star'){
+    return '<path d="M70 2 l7 16 17 1.5 -13 11.5 4 17 -15 -9 -15 9 4 -17 -13 -11.5 17 -1.5 z" fill="#FFD93B" stroke="#33302E" stroke-width="3.5" stroke-linejoin="round"/>';
+  }
+  /* crown */
+  return '<path d="M38 44 L46 20 L60 36 L70 14 L80 36 L94 20 L102 44 Z" fill="' + color + '" stroke="#33302E" stroke-width="4" stroke-linejoin="round"/>';
+}
+function mascotSVG(o){
+  o = o || {};
+  const body  = o.body  || '#FFFFFF';
+  const shade = o.shade || '#E6EDF3';
+  const beak  = o.beak  || '#F5A623';
+  const acc   = o.acc   || 'pilot';
+  const hat   = o.hat   || '#E8452C';
+  return '' +
+  '<svg viewBox="0 0 140 140" aria-hidden="true">' +
+    '<g class="m-body">' +
+      '<ellipse cx="50" cy="124" rx="14" ry="7" fill="' + beak + '" stroke="#33302E" stroke-width="3.5"/>' +
+      '<ellipse cx="90" cy="124" rx="14" ry="7" fill="' + beak + '" stroke="#33302E" stroke-width="3.5"/>' +
+      '<ellipse class="m-wing-l" cx="26" cy="76" rx="10" ry="21" fill="' + shade + '" stroke="#33302E" stroke-width="3.5"/>' +
+      '<ellipse class="m-wing-r" cx="114" cy="76" rx="10" ry="21" fill="' + shade + '" stroke="#33302E" stroke-width="3.5"/>' +
+      '<ellipse cx="70" cy="74" rx="42" ry="46" fill="' + body + '" stroke="#33302E" stroke-width="4"/>' +
+      '<circle cx="41" cy="86" r="7.5" fill="#FFB3B3" opacity=".8"/>' +
+      '<circle cx="99" cy="86" r="7.5" fill="#FFB3B3" opacity=".8"/>' +
+      '<g class="m-eyes">' +
+        '<ellipse cx="56" cy="70" rx="7.5" ry="9" fill="#fff" stroke="#33302E" stroke-width="3"/>' +
+        '<ellipse cx="84" cy="70" rx="7.5" ry="9" fill="#fff" stroke="#33302E" stroke-width="3"/>' +
+        '<circle cx="57" cy="71" r="3.8" fill="#33302E"/>' +
+        '<circle cx="85" cy="71" r="3.8" fill="#33302E"/>' +
+      '</g>' +
+      '<path class="m-beak" d="M70 82 L57 93 Q70 103 83 93 Z" fill="' + beak + '" stroke="#33302E" stroke-width="3.5" stroke-linejoin="round"/>' +
+      accessory(acc, hat) +
+    '</g>' +
+  '</svg>';
+}
+const MASCOT_STYLE = {
+  1:{body:'#FFFFFF', shade:'#EAEFF4', beak:'#F5A623', acc:'pilot', hat:'#E8452C'},
+  2:{body:'#FFE07A', shade:'#F7C948', beak:'#F2762E', acc:'crown', hat:'#38A9E3'},
+  3:{body:'#4A3B33', shade:'#372B25', beak:'#F5A623', acc:'ninja', hat:'#E8452C'},
+  4:{body:'#FFFFFF', shade:'#EAF6E8', beak:'#F5A623', acc:'star',  hat:'#2FBF9E'},
+  5:{body:'#FFD1E3', shade:'#F7A8C6', beak:'#F2762E', acc:'bow',   hat:'#E8452C'},
+  6:{body:'#FFFFFF', shade:'#EDE7F6', beak:'#F5A623', acc:'pilot', hat:'#9B6BD6'},
+  7:{body:'#FFF3B0', shade:'#F5C518', beak:'#F2762E', acc:'crown', hat:'#E8452C'},
+  8:{body:'#C9B6E8', shade:'#A98FD6', beak:'#F5A623', acc:'ninja', hat:'#3B3226'},
+  9:{body:'#FFFFFF', shade:'#E8F4FB', beak:'#F5A623', acc:'star',  hat:'#F27FA8'}
+};
+function makeMascot(n, cls){
+  const d = document.createElement('div');
+  d.className = 'mascot ' + (cls || 'idle');
+  d.innerHTML = mascotSVG(MASCOT_STYLE[n] || MASCOT_STYLE[2]);
+  return d;
+}
+
+/* =========================================================
+   4. 全局状态
+   ========================================================= */
+const state = {
+  tables: [],          /* 默认不预选，让小朋友自己挑 */
+  maxB: 6,
+  countMode: '6',
+  step2Done: false,    /* 是否已经定好范围，决定第 3 步是否出现 */
+  sound: true,
+  queue: [],
+  idx: 0,
+  tries: 0,
+  stars: 0,
+  right: 0,
+  firstTryRight: 0,
+  mastered: new Set(),
+  q: null,
+  answered: false,
+  hintUsed: false
+};
+const key = (a, b) => a + 'x' + b;
+
+/* 小助手在每道题开始时说的话（按题型给，不重复上一题的内容） */
+const HELPER_TIP = {
+  array:   '先数一数每行有几个，再看看一共有几行，就能用乘法算啦～',
+  add:     '看看每份几个、一共几份。几个几相加，用乘法最简便。',
+  expr:    '相同加数是几？有几个这样的加数？把它们分别写在乘号两边。',
+  commute: '两个乘数换个位置，得数会变吗？转一转图看看。',
+  split:   '不会算就先拆一拆，分成两块分别算，最后加起来。',
+  double:  '想一想：这个大数是小数的几倍呢？',
+  factor:  '平均分就是问：几乘几等于总数？',
+  rhyme:   '口诀里藏着一个乘法算式，读一读就知道啦。',
+  default: '别着急，慢慢想一想～'
+};
+/* 更新小助手文案，并让它重新播一次淡入，提醒“换新内容了” */
+function setHelper(html){
+  const ht = $('#helperText');
+  if (!ht) return;
+  ht.innerHTML = html;
+  ht.style.animation = 'none';
+  void ht.offsetWidth;
+  ht.style.animation = '';
+}
+
+/* =========================================================
+   5. 设置页
+   ========================================================= */
+function buildParade(){
+  const p = $('#parade'); p.innerHTML = '';
+  [2,5,4,7,9,3,6,8,1].forEach(n => {
+    const m = makeMascot(n, 'idle');
+    m.style.animationDelay = (rnd(10) / 10) + 's';
+    p.appendChild(m);
+  });
+}
+function buildTableGrid(){
+  const g = $('#tableGrid'); g.innerHTML = '';
+  for (let n = 1; n <= 9; n++){
+    const c = document.createElement('button');
+    c.className = 'tcard' + (state.tables.indexOf(n) >= 0 ? ' on' : '');
+    c.dataset.n = n;
+    const mini = makeMascot(n, 'idle');
+    mini.classList.add('mini');
+    c.innerHTML = '<span class="tick">✓</span><span class="band" style="background:' + TABLECOLOR[n] + ';color:' + NAMECOLOR[n] + '">' + n + '的乘法</span>';
+    c.appendChild(mini);
+    c.addEventListener('click', () => {
+      const i = state.tables.indexOf(n);
+      if (i >= 0) state.tables.splice(i, 1);
+      else state.tables.push(n);
+      state.tables.sort((x, y) => x - y);
+      c.classList.toggle('on');
+      sfxClick(); updatePreview(); updateSteps();
+    });
+    g.appendChild(c);
+  }
+}
+function setTables(list){
+  state.tables = list.slice().sort((a, b) => a - b);
+  $$('#tableGrid .tcard').forEach(c => c.classList.toggle('on', state.tables.indexOf(+c.dataset.n) >= 0));
+  updatePreview();
+  updateSteps();
+}
+function factsInRange(){
+  const out = [];
+  state.tables.forEach(a => { for (let b = 1; b <= state.maxB; b++) out.push([a, b]); });
+  return out;
+}
+function updatePreview(){
+  const facts = factsInRange();
+  if (!facts.length){
+    $('#rangePreview').innerHTML = '还没有挑口诀哦～先在上面点一个卡片吧。';
+    return;
+  }
+  const list = facts.slice(0, 12).map(f => '<span class="chip hi">' + f[0] + '×' + f[1] + '</span>').join('');
+  const more = facts.length > 12 ? '<span class="chip">…… 共 ' + facts.length + ' 个算式</span>' : '';
+  $('#rangePreview').innerHTML =
+    '今天要练：<b>' + state.tables.join('、') + '</b> 的口诀，最大乘到 <b>' + state.maxB + '</b>。<br>' +
+    '一共 <b>' + facts.length + '</b> 个算式：<div class="chips">' + list + more + '</div>';
+}
+
+/* ---------- 分步引导：1 选口诀 → 2 定范围 → 3 定题数 → 出发 ---------- */
+function toggleStep(el, show){
+  if (!el) return;
+  const wasShown = !el.classList.contains('step-hidden');
+  el.classList.toggle('step-hidden', !show);
+  if (show && !wasShown){
+    setTimeout(() => { if (el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 80);
+  }
+}
+function updateSteps(){
+  const hasTable = state.tables.length > 0;
+  const step3 = hasTable && state.step2Done;
+  toggleStep($('#panelMax'), hasTable);          /* 选了口诀，才出现第 2 步 */
+  toggleStep($('#panelCount'), step3);           /* 定好范围，才出现第 3 步 */
+  toggleStep($('#startRow'), step3);             /* 第 3 步出现时，出发按钮才露出来 */
+  const cur = !hasTable ? 1 : (state.step2Done ? 3 : 2);
+  $$('#stepper .stp').forEach(el => {
+    const s = +el.dataset.s;
+    el.classList.toggle('on', s === cur);
+    el.classList.toggle('done', s < cur);
+  });
+  $('#stepHint').textContent =
+    cur === 1 ? '👆 先点一个口诀卡片，我就知道你要练哪个啦'
+  : cur === 2 ? '👉 拖一拖滑杆，决定最大乘到几'
+  : '🎯 最后一件事：这一轮想做几道题？';
+  $('#btnMaxOk').textContent = '就练到 ' + state.maxB + ' ✅';
+}
+
+/* =========================================================
+   6. 出题：八种题型，全都围绕“数学原理”
+   ========================================================= */
+function numOptions(ans, a, b){
+  const set = new Set();
+  const push = v => { if (v > 0 && v !== ans) set.add(v); };
+  push(ans + 1); push(ans - 1); push(ans + a); push(ans - a);
+  push(ans + b); push(ans - b); push((a + 1) * b); push((a - 1) * b);
+  push(a * (b + 1)); push(a * (b - 1)); push(a + b); push(ans + 2); push(ans + 3);
+  for (let k = 4; k <= 14; k++) push(ans + k);
+  const arr = Array.from(set).sort((x, y) => Math.abs(x - ans) - Math.abs(y - ans));
+  return shuffle([ans].concat(arr.slice(0, 3))).map(String);
+}
+function smallOptions(ans, a, b){
+  const set = new Set();
+  const push = v => { if (v > 0 && v !== ans) set.add(v); };
+  [ans + 1, ans - 1, ans + 2, ans - 2, a, b, a + b, Math.abs(a - b), ans + b, ans + a].forEach(push);
+  for (let k = 1; k <= 12; k++){ push(ans + k); push(ans - k); }
+  const arr = Array.from(set).sort((x, y) => Math.abs(x - ans) - Math.abs(y - ans));
+  return shuffle([ans].concat(arr.slice(0, 3))).map(String);
+}
+function exprOptions(a, b){
+  const right = a + '×' + b;
+  const set = new Set([a + '+' + b, b + '×' + b, a + '×' + a, a + '×' + (b + 1), (a + 1) + '×' + b, a + '+' + a, b + '+' + b]);
+  set.delete(right);
+  return shuffle([right].concat(shuffle(Array.from(set)).slice(0, 3)));
+}
+/* 阵列（每行 a 个，共 b 行） */
+function arrHTML(a, b, opt){
+  opt = opt || {};
+  const splitAt = opt.splitAt || 0, ca = opt.ca || COLORS[0], cb = opt.cb || COLORS[3];
+  let h = '<div class="arr' + (opt.sm ? ' sm' : '') + '">';
+  for (let r = 0; r < b; r++){
+    const c = (splitAt && r >= splitAt) ? cb : ca;
+    h += '<div class="arr-row" style="--rd:' + (r * .13).toFixed(2) + 's">';
+    h += '<span class="row-idx">' + (r + 1) + '行</span>';
+    for (let i = 0; i < a; i++){
+      h += '<span class="dot" style="--d:' + (r * .13 + i * .035).toFixed(2) + 's;--c:' + c + '"></span>';
+    }
+    h += '</div>';
+  }
+  return h + '</div>';
+}
+function addLineHTML(a, b, delayBase){
+  delayBase = delayBase || 0;
+  let h = '<div class="eqline">';
+  for (let i = 0; i < b; i++){
+    h += '<span class="term" style="--d:' + (delayBase + i * .2).toFixed(2) + 's">' + a + '</span>';
+    if (i < b - 1) h += '<span class="plus">+</span>';
+  }
+  h += '<span class="plus">=</span><span class="res" style="--d:' + (delayBase + b * .2 + .1).toFixed(2) + 's">' + (a * b) + '</span></div>';
+  return h;
+}
+function mulLineHTML(a, b, delay){
+  return '<div class="eqline"><span class="mui" style="--d:' + delay + 's">' + a + ' × ' + b + ' = ' + (a * b) + '</span></div>';
+}
+
+function buildQuestion(a, b){
+  const kinds = ['array', 'rhyme', 'array'];
+  if (b >= 2) kinds.push('add', 'factor', 'expr');
+  if (a !== b) kinds.push('commute');
+  if (b >= 3) kinds.push('split');
+  if (a >= 4 && a % 2 === 0) kinds.push('double');
+  const kind = pick(kinds);
+  const p = a * b;
+  const q = { a: a, b: b, answer: p, kind: kind, options: [], correct: 0 };
+
+  if (kind === 'array'){
+    q.tag = '看图列式';
+    q.prompt = '每行有 <b>' + a + '</b> 个，一共 <b>' + b + '</b> 行。<br>一共有多少个？';
+    q.hint = '先数一行有 ' + a + ' 个，再数有 ' + b + ' 行 —— 就是 ' + b + ' 个 ' + a + ' 相加，用乘法 <b>' + a + '×' + b + '</b> 算。';
+    q.stage = '<div class="stage-cap">每行 <b>' + a + '</b> 个 · 共 <b>' + b + '</b> 行</div>' + arrHTML(a, b) +
+              '<div class="stage-cap">👆 点一点每一行，自己数一数</div>';
+    q.solution = '<div class="solution">' + addLineHTML(a, b) + mulLineHTML(a, b, b * .2 + .4) +
+                 '<div class="sol-note">每行 ' + a + ' 个，' + b + ' 行 → <b>' + b + ' 个 ' + a + ' 相加</b>，就是 <b>' + a + '×' + b + '=' + p + '</b></div></div>';
+    q.principle = '乘法就是求<b>几个相同加数的和</b>。' + b + ' 个 ' + a + ' 相加，写成乘法就是 ' + a + '×' + b + '=' + p + '。';
+    q.options = numOptions(p, a, b);
+  }
+
+  else if (kind === 'add'){
+    let g = '<div class="groups' + (a >= 6 ? ' sm' : '') + '">';
+    for (let i = 0; i < b; i++){
+      g += '<div class="group" style="--gd:' + (i * .13).toFixed(2) + 's"><div class="gtitle">第' + (i + 1) + '份</div><div class="gdots">';
+      for (let j = 0; j < a; j++){
+        g += '<span class="dot" style="--d:' + (i * .13 + j * .03).toFixed(2) + 's;--c:' + COLORS[i % COLORS.length] + '"></span>';
+      }
+      g += '</div></div>';
+      if (i < b - 1) g += '<span class="plus-big" style="--pd:' + (i * .13 + .1).toFixed(2) + 's">+</span>';
+    }
+    g += '<span class="plus-big" style="--pd:' + (b * .13) + 's">=</span><span class="qmark">?</span></div>';
+    q.tag = '连加变乘法';
+    q.prompt = '这里一共有多少个小圆点？<br><span style="font-size:.82em;color:#8a7f6a">先看看：几个几相加？</span>';
+    q.hint = '数一数：每份 ' + a + ' 个，一共 ' + b + ' 份 → ' + b + ' 个 ' + a + ' 相加，可以写成 <b>' + a + '×' + b + '</b>。';
+    q.stage = '<div class="stage-cap">每份 <b>' + a + '</b> 个 · 共 <b>' + b + '</b> 份</div>' + g;
+    q.solution = '<div class="solution">' + addLineHTML(a, b) + mulLineHTML(a, b, b * .2 + .4) +
+                 '<div class="sol-note">求几个相同加数的和，用乘法最简便：<b>' + a + '×' + b + '=' + p + '</b></div></div>';
+    q.principle = '连加太长了！<b>' + b + ' 个 ' + a + '</b> 相加，就是 ' + a + '×' + b + '=' + p + '。乘法是加法的简便运算。';
+    q.options = numOptions(p, a, b);
+  }
+
+  else if (kind === 'expr'){
+    let g = '<div class="groups' + (a >= 6 ? ' sm' : '') + '">';
+    for (let i = 0; i < b; i++){
+      g += '<div class="group" style="--gd:' + (i * .13).toFixed(2) + 's"><div class="gdots">';
+      for (let j = 0; j < a; j++){
+        g += '<span class="dot" style="--d:' + (i * .13 + j * .03).toFixed(2) + 's;--c:' + COLORS[i % COLORS.length] + '"></span>';
+      }
+      g += '</div></div>';
+      if (i < b - 1) g += '<span class="plus-big" style="--pd:' + (i * .13 + .1).toFixed(2) + 's">+</span>';
+    }
+    g += '</div>';
+    q.tag = '几个几相加';
+    q.prompt = '图中有 <b>' + b + '</b> 份，每份 <b>' + a + '</b> 个。<br>下面哪个乘法算式表示它？';
+    q.hint = '每份 ' + a + ' 个，有 ' + b + ' 份 → ' + b + ' 个 ' + a + '，写成 <b>' + a + '×' + b + '</b>。';
+    q.stage = '<div class="stage-cap">每份 <b>' + a + '</b> 个 · 共 <b>' + b + '</b> 份</div>' + g;
+    q.solution = '<div class="solution">' + addLineHTML(a, b) + mulLineHTML(a, b, b * .2 + .4) +
+                 '<div class="sol-note">相同加数 <b>' + a + '</b> 写前面，个数 <b>' + b + '</b> 写后面 → <b>' + a + '×' + b + '=' + p + '</b></div></div>';
+    q.principle = '把 <b>' + b + ' 个 ' + a + '</b> 相加写成乘法，就是 ' + a + '×' + b + '。加数写在乘号前面，加数的个数写在后面。';
+    q.answer = a + '×' + b;   /* 答案本身是算式，不是数 */
+    q.options = exprOptions(a, b);
+    q.textOptions = true;
+  }
+
+  else if (kind === 'commute'){
+    q.tag = '交换律';
+    q.prompt = '我们已经知道 <b>' + a + '×' + b + '=' + p + '</b>。<br>那么 <b>' + b + '×' + a + '</b> 等于多少呢？';
+    q.hint = '把图转一转：原来每行 ' + a + ' 个、' + b + ' 行；现在变成每行 ' + b + ' 个、' + a + ' 行。小圆点的总数没变哦！';
+    q.stage = '<div class="stage-cap">原来：每行 <b>' + a + '</b> 个 · 共 <b>' + b + '</b> 行 = <b>' + p + '</b></div>' + arrHTML(a, b) +
+              '<div class="stage-cap">👉 交换“行”和“列”，数量会变吗？</div>';
+    q.solution = '<div class="solution"><div class="swap-demo">' +
+                 '<div><div>' + arrHTML(a, b, { sm: true }) + '</div><div class="stage-cap">' + a + '×' + b + '=' + p + '</div></div>' +
+                 '<span class="big-arrow">➜</span>' +
+                 '<div><div>' + arrHTML(b, a, { ca: COLORS[3], sm: true }) + '</div><div class="stage-cap">' + b + '×' + a + '=' + p + '</div></div>' +
+                 '</div><div class="sol-note">只是把队伍<b>横过来看</b>，总数当然一样：<b>' + a + '×' + b + ' = ' + b + '×' + a + ' = ' + p + '</b></div></div>';
+    q.principle = '<b>交换律</b>：两个数相乘，交换位置，积不变。' + a + '×' + b + ' 和 ' + b + '×' + a + ' 都是 ' + p + '，所以记一句口诀就够了。';
+    q.options = numOptions(p, b, a);
+  }
+
+  else if (kind === 'split'){
+    const m = 1 + rnd(b - 1);
+    const n = b - m;
+    const askMissing = Math.random() < .5;
+    const sun = '<span style="font-size:30px">☀️</span>';
+    q.tag = '拆分巧算';
+    q.stage = '<div class="stage-cap">把 ' + b + ' 行<b>拆成</b> ' + m + ' 行 + ' + n + ' 行</div>' +
+              arrHTML(a, b, { splitAt: m, ca: COLORS[1], cb: COLORS[3] }) +
+              '<div class="stage-cap">' + sun + ' 红色的 ' + m + ' 行 · 蓝色的 ' + n + ' 行</div>';
+    if (askMissing){
+      q.prompt = '<b>' + a + '×' + b + '</b> 可以拆成 <b>' + a + '×' + m + '</b> 和 <b>' + a + '×?</b>。<br>这个“?”是几？';
+      q.hint = '一共 ' + b + ' 行，先拿走 ' + m + ' 行，还剩 ' + b + ' − ' + m + ' 行。';
+      q.answer = n;
+      q.options = smallOptions(n, m, b);
+      q.solution = '<div class="solution">' +
+        '<div class="eqline"><span class="term">' + m + '</span><span class="plus">+</span><span class="term">' + n + '</span><span class="plus">=</span><span class="res">' + b + '</span></div>' +
+        '<div class="sol-note"><b>' + a + '×' + b + ' = ' + a + '×' + m + ' + ' + a + '×' + n + ' = ' + (a * m) + ' + ' + (a * n) + ' = ' + p + '</b></div></div>';
+      q.principle = '<b>乘法分配</b>：把 ' + b + ' 行拆成 ' + m + ' 行和 ' + n + ' 行，两部分加起来还是 ' + b + ' 行，所以 ' + a + '×' + b + ' = ' + a + '×' + m + ' + ' + a + '×' + n + ' = ' + p + '。';
+    } else {
+      q.prompt = '看图：蓝色部分是 <b>' + a + '×' + n + '</b>。<br>它等于多少呢？';
+      q.hint = '蓝色有 ' + n + ' 行，每行 ' + a + ' 个 → 就是 ' + n + ' 个 ' + a + ' 相加。';
+      q.answer = a * n;
+      q.options = numOptions(a * n, a, n);
+      q.solution = '<div class="solution">' +
+        '<div class="eqline"><span class="mui" style="--d:0s">红 ' + a + '×' + m + ' = ' + (a * m) + '</span><span class="plus">+</span><span class="mui" style="--d:.25s">蓝 ' + a + '×' + n + ' = ' + (a * n) + '</span></div>' +
+        '<div class="eqline"><span class="res" style="--d:.6s">合起来 ' + (a * m) + ' + ' + (a * n) + ' = ' + p + '</span></div>' +
+        '<div class="sol-note">拆开算，再加起来，和 <b>' + a + '×' + b + '=' + p + '</b> 一样！</div></div>';
+      q.principle = '<b>拆分凑整</b>：' + a + '×' + b + ' 不会算，就拆成 ' + a + '×' + m + ' 和 ' + a + '×' + n + ' 两块，算完再加起来，这就是分配律的雏形。';
+    }
+  }
+
+  else if (kind === 'double'){
+    const half = a / 2;
+    q.tag = '倍的认识';
+    q.prompt = '已知 <b>' + half + '×' + b + '=' + (half * b) + '</b>。<br>那么 <b>' + a + '×' + b + '</b> 是多少？';
+    q.hint = a + ' 里面有 <b>2 个 ' + half + '</b>，也就是把 ' + half + '×' + b + ' 算<b>两遍</b>。';
+    q.stage = '<div class="stage-cap">' + half + '×' + b + ' 的图，来两份 👇</div><div class="swap-demo">' +
+              '<div>' + arrHTML(half, b, { ca: COLORS[0], sm: true }) + '</div>' +
+              '<span class="plus-big">+</span>' +
+              '<div>' + arrHTML(half, b, { ca: COLORS[4], sm: true }) + '</div></div>';
+    q.solution = '<div class="solution">' +
+      '<div class="eqline"><span class="term">' + (half * b) + '</span><span class="plus">+</span><span class="term">' + (half * b) + '</span><span class="plus">=</span><span class="res">' + p + '</span></div>' +
+      '<div class="sol-note"><b>' + a + '×' + b + ' = (' + half + '×2)×' + b + ' = ' + (half * b) + '×2 = ' + p + '</b></div></div>';
+    q.principle = '<b>倍</b>的关系：' + a + ' 是 ' + half + ' 的 2 倍，所以 ' + a + '×' + b + ' 就是 ' + half + '×' + b + ' 的 2 倍。会算小的，就会算大的！';
+    q.options = numOptions(p, half, b);
+  }
+
+  else if (kind === 'factor'){
+    let plates = '<div class="plates">';
+    for (let i = 0; i < b; i++){
+      plates += '<div class="plate" style="--pd:' + (a >= 6 ? 12 : 15) + 'px"><div class="prow">';
+      for (let j = 0; j < a; j++){
+        const order = j * b + i;
+        plates += '<span class="dot" style="--d:' + (order * .055).toFixed(2) + 's;--c:' + COLORS[i % COLORS.length] + '"></span>';
+      }
+      plates += '</div><span class="badge">盘' + (i + 1) + '</span></div>';
+    }
+    plates += '</div>';
+    q.tag = '除法的秘密';
+    q.prompt = '把 <b>' + p + '</b> 个小圆点，<b>平均</b>放进 <b>' + b + '</b> 个盘子。<br>每盘放几个？';
+    q.hint = '每个盘子放得同样多。想一句口诀：<b>几乘 ' + b + ' 等于 ' + p + '</b>？';
+    q.stage = '<div class="stage-cap">🍽️ <b>' + p + '</b> 个 ➜ 平均分给 <b>' + b + '</b> 个盘子</div>' + plates +
+              '<div class="stage-cap">每个盘子里的数量要一样多哦</div>';
+    q.solution = '<div class="solution">' + mulLineHTML(a, b, 0) +
+      '<div class="sol-note">想：<b>' + a + '×' + b + '=' + p + '</b>，所以 ' + p + ' 平均分成 ' + b + ' 份，每份 <b>' + a + '</b> 个。<br>' + p + ' ÷ ' + b + ' = ' + a + '</div></div>';
+    q.principle = '<b>乘法和除法是一家</b>：' + a + '×' + b + '=' + p + '，反过来 ' + p + '÷' + b + '=' + a + '。平均分的问题，用一句乘法口诀就能解决。';
+    q.options = smallOptions(a, a, b);
+    q.answer = a;
+  }
+
+  else { /* rhyme */
+    const full = rhymeOf(a, b);
+    const blankAt = Math.random() < .5 ? 'tail' : 'mid';
+    const s = Math.min(a, b), l = Math.max(a, b);
+    q.tag = '乘法口诀';
+    q.answer = p;
+    if (blankAt === 'tail'){
+      q.prompt = '补全口诀：<span class="tagq">' + CN[s] + CN[l] + (p < 10 ? '得' : '') + '？</span><br>“？”处应该填什么数？';
+    } else {
+      q.prompt = '读一读这句口诀：<br><span class="tagq">' + full + '</span><br>它算出的积是多少？';
+    }
+    q.hint = '口诀里藏着算式：<b>' + s + '×' + l + '=' + p + '</b>。想想 ' + l + ' 个 ' + s + ' 相加是多少。';
+    q.stage = '<div class="stage-cap">口诀：<b>' + (blankAt === 'tail' ? CN[s] + CN[l] + (p < 10 ? '得' : '') + '?' : full) + '</b></div>' +
+              arrHTML(s, l) + '<div class="stage-cap">口诀里的图：每行 <b>' + s + '</b> 个 · 共 <b>' + l + '</b> 行</div>';
+    q.solution = '<div class="solution"><div class="eqline"><span class="mui">' + full + '</span></div>' +
+      addLineHTML(s, l) + '<div class="sol-note">口诀“<b>' + full + '</b>”就是 <b>' + s + '×' + l + '=' + p + '</b>，中文口诀帮我们记得又快又牢。</div></div>';
+    q.principle = '乘法口诀是把 ' + s + '×' + l + '=' + p + ' 编成顺口的句子。<b>' + full + '</b>：小数在前、大数在后，积不满十加个“得”。';
+    q.options = numOptions(p, s, l);
+  }
+
+  /* 打乱选项，记录正确位置 */
+  q.options = shuffle(q.options);
+  q.correct = q.options.indexOf(String(q.answer));
+  return q;
+}
+
+/* =========================================================
+   7. 口诀墙
+   ========================================================= */
+function renderWall(){
+  const w = $('#wall'); w.innerHTML = '';
+  state.tables.forEach(a => {
+    const row = document.createElement('div');
+    row.className = 'wall-row';
+    row.innerHTML = '<span class="wall-tab" style="background:' + TABLECOLOR[a] + ';color:' + NAMECOLOR[a] + '">' + a + '的口诀</span>';
+    const cells = document.createElement('div');
+    cells.className = 'wall-cells';
+    for (let b = 1; b <= state.maxB; b++){
+      const c = document.createElement('span');
+      c.className = 'cell' + (state.mastered.has(key(a, b)) ? ' done' : '');
+      c.dataset.k = key(a, b);
+      c.textContent = state.mastered.has(key(a, b)) ? (a * b) : '?';
+      cells.appendChild(c);
+    }
+    row.appendChild(cells);
+    w.appendChild(row);
+  });
+}
+function markWall(a, b){
+  const c = $('#wall .cell[data-k="' + key(a, b) + '"]');
+  if (c){ c.textContent = a * b; c.classList.add('done'); }
+}
+function highlightWall(a, b){
+  $$('#wall .cell').forEach(c => c.classList.remove('now'));
+  const c = $('#wall .cell[data-k="' + key(a, b) + '"]');
+  if (c) c.classList.add('now');
+}
+
+/* =========================================================
+   8. 游戏流程
+   ========================================================= */
+function showScreen(id){
+  $$('.screen').forEach(s => s.classList.toggle('active', s.id === id));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function currentMascotNo(){
+  if (state.q && state.tables.indexOf(state.q.a) >= 0) return state.q.a;
+  return state.tables[0] || 2;
+}
+function startRound(){
+  const facts = shuffle(factsInRange());
+  if (!facts.length){           /* 没选口诀就哪儿也不去 */
+    showScreen('screen-setup');
+    updateSteps();
+    return;
+  }
+  const total = state.countMode === 'all' ? facts.length : Math.min(parseInt(state.countMode, 10), facts.length);
+  state.queue = facts.slice(0, total).map(f => buildQuestion(f[0], f[1]));
+  state.idx = 0; state.stars = 0; state.right = 0; state.firstTryRight = 0;
+  state.mastered = new Set();
+  $('#starCount').textContent = '0';
+  $('#rightCount').textContent = '0';
+  renderWall();
+  setTeacher(currentMascotNo());
+  showScreen('screen-game');
+  setTimeout(nextQuestion, 260);
+}
+function setTeacher(n){
+  const t = $('#teacher');
+  t.innerHTML = mascotSVG(MASCOT_STYLE[n] || MASCOT_STYLE[2]);
+  t.className = 'mascot idle';
+}
+function nextQuestion(){
+  hideSheet();
+  if (state.idx >= state.queue.length) return endRound();
+  state.q = state.queue[state.idx];
+  state.tries = 0; state.answered = false; state.hintUsed = false;
+  renderQuestion();
+}
+function renderQuestion(){
+  const q = state.q;
+  setTeacher(currentMascotNo());
+  $('#kindTag').textContent = q.tag;
+  $('#prompt').innerHTML = q.prompt;
+  $('#stage').innerHTML = q.stage;
+  $('#hintbar').classList.remove('show');
+  $('#hintbar').innerHTML = '';
+  highlightWall(q.a, q.b);
+  setHelper(HELPER_TIP[q.kind] || HELPER_TIP.default);   /* 每换一题，小助手重新说一句 */
+  $('#ptext') && ($('#ptext').textContent = '');
+  const total = state.queue.length;
+  $('#pfill').style.width = (state.idx / total * 100) + '%';
+  $('#procket').style.left = (state.idx / total * 100) + '%';
+
+  const box = $('#options');
+  box.innerHTML = '';
+  q.options.forEach((o, i) => {
+    const b = document.createElement('button');
+    b.className = 'opt';
+    b.innerHTML = '<span class="key">' + (i + 1) + '</span>' + o;
+    b.dataset.i = i;
+    b.addEventListener('click', () => answer(i, b));
+    box.appendChild(b);
+  });
+}
+function answer(i, btn){
+  const q = state.q;
+  if (state.answered) return;
+  if (btn.classList.contains('dim')) return;
+  if (i === q.correct){
+    state.answered = true;
+    btn.classList.add('correct');
+    $$('#options .opt').forEach(o => o.classList.add('locked'));
+    $$('#options .opt').forEach(o => { if (o !== btn) o.classList.add('dim'); });
+    const star = state.tries === 0 ? 3 : (state.tries === 1 ? 2 : 1);
+    state.stars += star; state.right++;
+    if (state.tries === 0) state.firstTryRight++;
+    state.mastered.add(key(q.a, q.b));
+    markWall(q.a, q.b);
+    $('#starCount').textContent = state.stars;
+    $('#rightCount').textContent = state.right;
+    sfxRight(); confetti(46);
+    const t = $('#teacher'); t.classList.remove('idle'); t.classList.add('happy');
+    revealSolution();
+    if (state.sheetTimer) clearTimeout(state.sheetTimer);
+    state.sheetTimer = setTimeout(() => {
+      if (state.q !== q) return;          /* 已翻到下一题就不再弹 */
+      showSheet(star);
+      sfxWin();
+    }, 850);
+  } else {
+    state.tries++;
+    btn.classList.add('wrong');
+    sfxWrong();
+    const t = $('#teacher'); t.classList.remove('idle'); t.classList.add('sad');
+    setTimeout(() => { t.classList.remove('sad'); t.classList.add('idle'); }, 620);
+    setTimeout(() => { btn.classList.remove('wrong'); btn.classList.add('dim'); }, 700);
+    if (state.tries >= 1) showHint();
+    setHelper('再想一想～ 用乘法口诀帮帮忙：先想“几个几”。');
+  }
+}
+function revealSolution(){
+  const q = state.q;
+  const stage = $('#stage');
+  const div = document.createElement('div');
+  div.innerHTML = q.solution;
+  stage.appendChild(div.firstElementChild);
+  setTimeout(() => {
+    const nodes = $$('.solution .dot, .solution .term, .solution .res, .solution .mui', stage);
+    nodes.forEach((n, k) => { if (k % 3 === 0) sfxTick(); });
+  }, 60);
+}
+function showHint(){
+  state.hintUsed = true;
+  const h = $('#hintbar');
+  h.innerHTML = '<b>💡 小提示：</b>' + state.q.hint;
+  h.classList.add('show');
+}
+function showSheet(star){
+  const q = state.q;
+  $('#sheetEmoji').textContent = star === 3 ? '🎉' : (star === 2 ? '👍' : '💪');
+  $('#sheetTitle').textContent = star === 3 ? '太棒了！一次就答对！' : (star === 2 ? '答对啦，真不错！' : '答对了，继续加油！');
+  $('#sheetRhyme').textContent = '口诀：' + rhymeOf(q.a, q.b);
+  $('#principleText').innerHTML = q.principle;
+  $('#sheet').classList.add('show');
+  document.body.classList.add('sheet-open');
+  /* 让讲解动画不被弹层挡住 */
+  setTimeout(() => {
+    const st = $('#stage');
+    if (st && st.getBoundingClientRect().bottom > window.innerHeight - 230){
+      st.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, 260);
+}
+function hideSheet(){
+  if (state.sheetTimer) { clearTimeout(state.sheetTimer); state.sheetTimer = null; }
+  $('#sheet').classList.remove('show');
+  document.body.classList.remove('sheet-open');
+}
+function endRound(){
+  $('#pfill').style.width = '100%';
+  $('#procket').style.left = '100%';
+  const total = state.queue.length;
+  const maxStars = total * 3;
+  const rate = total ? Math.round(state.firstTryRight / total * 100) : 0;
+  $('#rRight').textContent = state.right + '/' + total;
+  $('#rFirst').textContent = rate + '%';
+  $('#rStars').textContent = state.stars + '/' + maxStars;
+  const lv = rate >= 90 ? 3 : (rate >= 60 ? 2 : 1);
+  $('#starRow').textContent = '⭐'.repeat(lv) + '☆'.repeat(3 - lv);
+  $('#resultTitle').textContent = rate >= 90 ? '乘法小达人！' : (rate >= 60 ? '闯关成功！' : '完成挑战！');
+  $('#resultSub').textContent = rate >= 90 ? '你连口诀都背得滚瓜烂熟啦！' : (rate >= 60 ? '再练一轮，就能满分啦！' : '别灰心，多练几次一定行！');
+  const chips = $('#learnedChips');
+  const list = Array.from(state.mastered);
+  chips.innerHTML = list.length
+    ? list.map(k => {
+        const p = k.split('x');
+        return '<span class="chip hi">' + p[0] + '×' + p[1] + '=' + (p[0] * p[1]) + '</span>';
+      }).join('')
+    : '<span class="chip">这一轮还没点亮口诀，再来一次吧～</span>';
+  const rm = $('#resultMascot');
+  rm.innerHTML = mascotSVG(MASCOT_STYLE[currentMascotNo()]);
+  rm.className = 'mascot happy';
+  showScreen('screen-result');
+  sfxWin(); confetti(90);
+  setTimeout(() => confetti(70), 700);
+}
+
+/* =========================================================
+   9. 特效
+   ========================================================= */
+function confetti(n){
+  n = n || 40;
+  const fx = $('#fx');
+  for (let i = 0; i < n; i++){
+    const d = document.createElement('i');
+    d.className = 'confetti';
+    d.style.left = (Math.random() * 100) + 'vw';
+    d.style.background = pick(['#E8452C','#F79A1E','#FFD93B','#2FBF9E','#38A9E3','#9B6BD6','#F27FA8']);
+    d.style.animationDelay = (Math.random() * .5).toFixed(2) + 's';
+    d.style.animationDuration = (1.3 + Math.random() * .9).toFixed(2) + 's';
+    d.style.setProperty('--x', (Math.random() * 140 - 70).toFixed(0) + 'px');
+    if (Math.random() < .5) d.style.borderRadius = '50%';
+    fx.appendChild(d);
+    setTimeout(() => d.remove(), 2800);
+  }
+}
+
+/* =========================================================
+   10. 事件绑定
+   ========================================================= */
+/* 设置页 */
+$('#maxRange').addEventListener('input', e => {
+  state.maxB = parseInt(e.target.value, 10);
+  $('#maxShow').textContent = state.maxB;
+  sfxTick();
+  updatePreview();
+  /* 只要动过滑杆，就算定好了范围 → 露出第 3 步 */
+  if (!state.step2Done){ state.step2Done = true; sfxPop(); }
+  updateSteps();
+});
+$('#btnMaxOk').addEventListener('click', () => {
+  sfxClick();
+  state.step2Done = true;
+  updateSteps();
+});
+$$('#countOpts .mini-btn').forEach(b => b.addEventListener('click', () => {
+  $$('#countOpts .mini-btn').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  state.countMode = b.dataset.count;
+  sfxClick();
+}));
+$$('.quick .mini-btn').forEach(b => b.addEventListener('click', () => {
+  const q = b.dataset.quick;
+  if (q === 'all') setTables([1,2,3,4,5,6,7,8,9]);
+  else if (q === 'none') setTables([]);
+  else if (q === 'easy') setTables([2,5]);
+  else if (q === 'hard') setTables([6,7,8,9]);
+  sfxClick();
+}));
+$('#btnStart').addEventListener('click', () => {
+  if (!state.tables.length){ sfxWrong(); updateSteps(); return; }
+  ac(); sfxClick(); startRound();
+});
+$('#btnQuit').addEventListener('click', () => { sfxClick(); showScreen('screen-setup'); });
+$('#btnAgain').addEventListener('click', () => { sfxClick(); startRound(); });
+$('#btnBack').addEventListener('click', () => { sfxClick(); showScreen('screen-setup'); });
+$('#btnNext').addEventListener('click', () => { sfxClick(); state.idx++; nextQuestion(); });
+$('#btnHint').addEventListener('click', () => { sfxClick(); showHint(); });
+$('#btnSound').addEventListener('click', () => {
+  state.sound = !state.sound;
+  $('#btnSound').textContent = state.sound ? '🔊' : '🔇';
+  if (state.sound) sfxClick();
+});
+/* 舞台交互：点一行就累加一次，把“几个几相加”数出来 */
+$('#stage').addEventListener('click', e => {
+  const row = e.target.closest ? e.target.closest('.arr-row') : null;
+  if (!row) return;
+  row.classList.toggle('counted');
+  sfxPop();
+  const per = row.querySelectorAll('.dot').length;
+  const on = $$('#stage .arr-row').filter(r => r.classList.contains('counted'));
+  if (!on.length){
+    setHelper('点一点每一行，我们一起数一数吧～');
+    return;
+  }
+  const sum = on.length * per;
+  const terms = on.slice(0, 6).map(() => per).join(' + ') + (on.length > 6 ? ' + …' : '');
+  setHelper('你数了 <b>' + on.length + '</b> 行，每行 ' + per + ' 个：<br>' + terms + ' = <b>' + sum + '</b> 个' +
+    (on.length === $$('#stage .arr-row').length ? '<br>👏 全部数完啦，用乘法更快：<b>' + per + '×' + on.length + '=' + sum + '</b>' : ''));
+});
+/* 键盘 */
+document.addEventListener('keydown', e => {
+  if ($('#screen-game').classList.contains('active')){
+    if (e.key >= '1' && e.key <= '4'){
+      const b = $$('#options .opt')[parseInt(e.key, 10) - 1];
+      if (b) b.click();
+    }
+    if ((e.key === 'Enter' || e.key === ' ') && $('#sheet').classList.contains('show')){
+      e.preventDefault(); $('#btnNext').click();
+    }
+    if (e.key === 'h' || e.key === 'H') showHint();
+  } else if ($('#screen-setup').classList.contains('active') && e.key === 'Enter'){
+    $('#btnStart').click();
+  } else if ($('#screen-result').classList.contains('active') && e.key === 'Enter'){
+    $('#btnAgain').click();
+  }
+});
+
+/* =========================================================
+   11. 启动
+   ========================================================= */
+buildParade();
+buildTableGrid();
+$('#helper').innerHTML = mascotSVG(MASCOT_STYLE[6]);
+$('#teacher').innerHTML = mascotSVG(MASCOT_STYLE[2]);
+$('#resultMascot').innerHTML = mascotSVG(MASCOT_STYLE[2]);
+$('#maxShow').textContent = state.maxB;
+$('#maxRange').value = state.maxB;
+updatePreview();
+updateSteps();   /* 初始只露出第 1 步：选口诀 */
+</script>
+</body>
+</html>
